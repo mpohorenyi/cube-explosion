@@ -16,8 +16,6 @@ export class Scene {
     aspectRatio: window.innerWidth / window.innerHeight,
   };
 
-  private meshes: THREE.Mesh[] = [];
-
   constructor(canvasSelector: string) {
     // Initialize Canvas
     this.canvas = document.querySelector(canvasSelector) as HTMLCanvasElement;
@@ -61,24 +59,24 @@ export class Scene {
     this.scene.add(mesh);
   }
 
-  public clearScene() {
-    this.meshes.forEach(mesh => {
-      if (mesh.geometry) {
-        mesh.geometry.dispose();
-      }
-
-      if (mesh.material) {
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach(material => material.dispose());
-        } else {
-          mesh.material.dispose();
+  public clearMeshes() {
+    this.scene.traverse(child => {
+      if (child instanceof THREE.Mesh) {
+        if (child.geometry) {
+          child.geometry.dispose();
         }
+
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach(material => material.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+
+        this.scene.remove(child);
       }
-
-      this.scene.remove(mesh);
     });
-
-    this.meshes = [];
   }
 
   private setupEventListeners() {
