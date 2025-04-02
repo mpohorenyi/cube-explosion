@@ -19,19 +19,17 @@ export class LoadManager {
 
     const texture = this.textureLoader.load(
       url,
-      texture => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.generateMipmaps = false;
-        texture.minFilter = THREE.NearestFilter;
-        texture.magFilter = THREE.NearestFilter;
-
-        this.textures.set(url, texture);
-      },
+      undefined,
       undefined,
       error => {
         console.error(`Error loading texture ${url}:`, error);
       }
     );
+
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
 
     this.textures.set(url, texture);
 
@@ -40,6 +38,10 @@ export class LoadManager {
 
   public loadTextures(urls: string[]): THREE.Texture[] {
     return urls.map(url => this.loadTexture(url));
+  }
+
+  public getAllTextures(): THREE.Texture[] {
+    return Array.from(this.textures.values());
   }
 
   private setupLoadingManager(): void {
