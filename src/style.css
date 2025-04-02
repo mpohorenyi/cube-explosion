@@ -1,34 +1,20 @@
-.scenes_container {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2rem;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.scene-4_container, 
-.scene-6_container {
-  position: relative;
-  width: 800px;
-  height: 600px;
+html,
+body
+{
+    overflow: hidden;
 }
 
-.fullscreen-icon {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  fill: #DEE2E6;
-  z-index: 100;
-  transition: 0.3s ease;
+.webgl
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
 }
 
-.fullscreen-icon:hover {
-  transform: scale(1.1);
-}
-
-.debug_scene_6_container {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-}
