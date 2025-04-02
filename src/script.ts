@@ -1,11 +1,12 @@
-import * as THREE from 'three';
-
-import { LoadManager, Scene } from './classes';
+import { CubeGenerator, LoadManager, Scene } from './classes';
 
 const scene = new Scene('.webgl');
 
 const loadManager = new LoadManager();
-loadManager.loadTextures([
+
+const textures = loadManager.loadTextures([
+  '/textures/blocks/gravel.png',
+  '/textures/blocks/stone.png',
   '/textures/ores/coal_ore.png',
   '/textures/ores/copper_ore.png',
   '/textures/ores/diamond_ore.png',
@@ -16,12 +17,21 @@ loadManager.loadTextures([
   '/textures/ores/redstone_ore.png',
 ]);
 
-const textures = loadManager.getAllTextures();
+const size = {
+  x: 10,
+  y: 10,
+  z: 10,
+};
 
-const box = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({
-  map: textures[4],
-});
-const mesh = new THREE.Mesh(box, material);
+const cubeGenerator = new CubeGenerator();
 
-scene.addMesh(mesh);
+scene.clearMeshes();
+
+const { meshes } = cubeGenerator.generateCubeMeshes(
+  size.x,
+  size.y,
+  size.z,
+  textures
+);
+
+meshes.forEach(mesh => scene.addMesh(mesh));
