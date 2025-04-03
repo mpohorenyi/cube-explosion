@@ -9,13 +9,18 @@ export default defineConfig({
     port: 3000,
   },
   build: {
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true, // Empty the folder first
     sourcemap: true, // Add sourcemap
   },
   plugins: [
     ViteRestart({
-      restart: ['vite.config.js', 'src/index.html', 'src/style.css', 'src/**/*.ts'],
+      restart: [
+        'vite.config.js',
+        'src/index.html',
+        'src/style.css',
+        'src/**/*.ts',
+      ],
     }),
   ],
   resolve: {
