@@ -60,8 +60,12 @@ export class Scene {
   }
 
   public clearMeshes() {
+    const meshesToRemove: THREE.Mesh[] = [];
+
     this.scene.traverse(child => {
       if (child instanceof THREE.Mesh) {
+        meshesToRemove.push(child);
+
         if (child.geometry) {
           child.geometry.dispose();
         }
@@ -73,10 +77,12 @@ export class Scene {
             child.material.dispose();
           }
         }
-
-        this.scene.remove(child);
       }
     });
+
+    for (const mesh of meshesToRemove) {
+      mesh.removeFromParent();
+    }
   }
 
   private setupEventListeners() {
