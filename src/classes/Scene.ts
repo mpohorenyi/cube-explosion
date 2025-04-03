@@ -118,21 +118,24 @@ export class Scene {
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     });
 
-    window.addEventListener('dblclick', () => {
-      const fullscreenElement =
-        document.fullscreenElement || (document as any).webkitFullscreenElement;
+    window.addEventListener('keydown', event => {
+      if (event.code === 'KeyF') {
+        const fullscreenElement =
+          document.fullscreenElement ||
+          (document as any).webkitFullscreenElement;
 
-      if (!fullscreenElement) {
-        if (this.canvas.requestFullscreen) {
-          this.canvas.requestFullscreen();
-        } else if ((this.canvas as any).webkitRequestFullscreen) {
-          (this.canvas as any).webkitRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          (document as any).webkitExitFullscreen();
+        if (!fullscreenElement) {
+          if (this.canvas.requestFullscreen) {
+            this.canvas.requestFullscreen();
+          } else if ((this.canvas as any).webkitRequestFullscreen) {
+            (this.canvas as any).webkitRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if ((document as any).webkitExitFullscreen) {
+            (document as any).webkitExitFullscreen();
+          }
         }
       }
     });
