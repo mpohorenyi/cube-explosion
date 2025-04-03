@@ -19,7 +19,7 @@ export class CubeGenerator {
     sizeY: number,
     sizeZ: number,
     textures: THREE.Texture[]
-  ): { meshes: THREE.Mesh[]; initialPositions: THREE.Vector3[] } {
+  ): THREE.Mesh[] {
     if (!textures || textures.length === 0) {
       console.warn('No textures provided for cube generation');
     }
@@ -45,10 +45,7 @@ export class CubeGenerator {
       }
     }
 
-    return {
-      meshes: [...this.meshes],
-      initialPositions: [...this.initialPositions],
-    };
+    return [...this.meshes];
   }
 
   private geometryCreators = [

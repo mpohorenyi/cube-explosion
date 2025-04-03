@@ -1,4 +1,10 @@
-import { CubeGenerator, LoadManager, Scene, UI } from './classes';
+import {
+  CubeAnimationManager,
+  CubeGenerator,
+  LoadManager,
+  Scene,
+  UI,
+} from './classes';
 
 const scene = new Scene('.webgl');
 
@@ -7,6 +13,8 @@ const loadManager = new LoadManager();
 const ui = new UI();
 
 const cubeGenerator = new CubeGenerator();
+
+const cubeAnimationManager = new CubeAnimationManager(scene.animationGroup);
 
 const textures = loadManager.loadTextures([
   '/textures/blocks/gravel.png',
@@ -24,13 +32,9 @@ const textures = loadManager.loadTextures([
 ui.setGenerateCallback(dimensions => {
   ui.updateUIState({ isAnimating: true });
 
-  try {
-    scene.clearMeshes();
-  } catch (error) {
-    console.error('Error while clearing meshes:', error);
-  }
+  scene.clearMeshes();
 
-  const { meshes } = cubeGenerator.generateCubeMeshes(
+  const meshes = cubeGenerator.generateCubeMeshes(
     dimensions.x,
     dimensions.y,
     dimensions.z,
@@ -39,12 +43,37 @@ ui.setGenerateCallback(dimensions => {
 
   meshes.forEach(mesh => scene.addMesh(mesh));
 
-  scene.setCameraPosition({
-    x: dimensions.x,
-    y: dimensions.y,
-    z: dimensions.z,
-  });
-  scene.setCameraLookAt({ x: 0, y: 0, z: 0 });
+  scene.camera.position.set(dimensions.x, dimensions.y, dimensions.z);
+  scene.controls.target.set(0, 0, 0);
 
-  ui.updateUIState({ cubeGenerated: true, isAnimating: false });
+  ui.updateUIState({
+    cubeGenerated: true,
+    isAnimating: false,
+    isExploded: false,
+  });
+});
+
+ui.setExplodeCallback(() => {
+  ui.updateUIState({ isAnimating: true });
+
+  cubeAnimationManager.explodeAnimation({
+    meshes: cubeGenerator.getMeshes(),
+    onComplete: () => {
+      ui.updateUIState({ isAnimating: false, isExploded: true });
+    },
+  });
+});
+
+ui.setCollectCallback(() => {
+  ui.updateUIState({ isAnimating: true });
+
+  const initialPositions = cubeGenerator.getInitialPositions();
+
+  cubeAnimationManager.collectAnimation({
+    meshes: cubeGenerator.getMeshes(),
+    initialPositions,
+    onComplete: () => {
+      ui.updateUIState({ isAnimating: false, isExploded: false });
+    },
+  });
 });
