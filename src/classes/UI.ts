@@ -13,10 +13,10 @@ export interface UIState {
 }
 
 export class UI {
+  private readonly MAX_SIZE = 10;
+
   private gui: GUI;
   private dimensionsFolder: GUI;
-
-  private MAX_SIZE = 10;
 
   private uiParams: {
     sizeX: number;
@@ -74,7 +74,7 @@ export class UI {
       .step(1)
       .name('Depth (Z)');
 
-    this.generateController = this.gui
+    this.generateController = this.dimensionsFolder
       .add(this.uiParams, 'generate')
       .name('Generate Cube');
     this.explodeController = this.gui
@@ -123,7 +123,11 @@ export class UI {
       return false;
     }
 
-    if (sizeX > this.MAX_SIZE || sizeY > this.MAX_SIZE || sizeZ > this.MAX_SIZE) {
+    if (
+      sizeX > this.MAX_SIZE ||
+      sizeY > this.MAX_SIZE ||
+      sizeZ > this.MAX_SIZE
+    ) {
       console.warn(`Dimensions limited to max size: ${this.MAX_SIZE}`);
 
       this.uiParams.sizeX = Math.min(sizeX, this.MAX_SIZE);

@@ -2,19 +2,13 @@ import { Group } from '@tweenjs/tween.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
-interface Coordinates {
-  x: number;
-  y: number;
-  z: number;
-}
-
 export class Scene {
-  private canvas: HTMLCanvasElement;
-  private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
-  private renderer: THREE.WebGLRenderer;
-  private controls: OrbitControls;
-  private animationGroup: Group;
+  public canvas: HTMLCanvasElement;
+  public scene: THREE.Scene;
+  public camera: THREE.PerspectiveCamera;
+  public renderer: THREE.WebGLRenderer;
+  public controls: OrbitControls;
+  public animationGroup: Group;
 
   private sizes = {
     width: window.innerWidth,
@@ -39,7 +33,7 @@ export class Scene {
       75,
       this.sizes.aspectRatio,
       0.1,
-      100
+      300
     );
     this.camera.position.set(3, 3, 3);
     this.scene.add(this.camera);
@@ -89,20 +83,6 @@ export class Scene {
     for (const mesh of meshesToRemove) {
       mesh.removeFromParent();
     }
-  }
-
-  public setCameraPosition(position: Coordinates) {
-    this.camera.position.set(position.x, position.y, position.z);
-  }
-
-  public setCameraLookAt(lookAt: Coordinates) {
-    const targetVector = new THREE.Vector3(lookAt.x, lookAt.y, lookAt.z);
-
-    this.camera.lookAt(targetVector);
-
-    this.controls.target.copy(targetVector);
-
-    this.controls.update();
   }
 
   private setupEventListeners() {
