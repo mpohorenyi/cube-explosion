@@ -12,6 +12,20 @@ export class LoadManager {
     this.setupLoadingManager();
   }
 
+  public loadEnvironmentMap(url: string): THREE.Texture {
+    const texture = this.textureLoader.load(
+      url,
+      undefined,
+      undefined,
+      error => {
+        console.error(`Error loading environment map ${url}:`, error);
+      }
+    );
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }
+
   public loadTexture(url: string): THREE.Texture {
     if (this.textures.has(url)) {
       return this.textures.get(url)!;

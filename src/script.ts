@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 import {
   CubeAnimationManager,
   CubeGenerator,
@@ -28,6 +30,12 @@ const textures = loadManager.loadTextures([
   '/textures/ores/lapis_ore.png',
   '/textures/ores/redstone_ore.png',
 ]);
+
+const environmentMap = loadManager.loadEnvironmentMap(
+  '/environment/cave-min.jpg'
+);
+scene.scene.background = environmentMap;
+scene.scene.environment = environmentMap;
 
 ui.setGenerateCallback(dimensions => {
   ui.updateUIState({ isAnimating: true });
