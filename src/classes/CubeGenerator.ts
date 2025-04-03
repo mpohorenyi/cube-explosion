@@ -4,9 +4,6 @@ export class CubeGenerator {
   private meshes: THREE.Mesh[] = [];
   private initialPositions: THREE.Vector3[] = [];
 
-  private MIN_SIZE = 1;
-  private MAX_SIZE = 10;
-
   constructor() {}
 
   public getMeshes(): THREE.Mesh[] {
@@ -23,27 +20,8 @@ export class CubeGenerator {
     sizeZ: number,
     textures: THREE.Texture[]
   ): { meshes: THREE.Mesh[]; initialPositions: THREE.Vector3[] } {
-    if (
-      sizeX > this.MAX_SIZE ||
-      sizeY > this.MAX_SIZE ||
-      sizeZ > this.MAX_SIZE
-    ) {
-      console.warn(`Size exceeds maximum allowed size: ${this.MAX_SIZE}`);
-      return { meshes: this.meshes, initialPositions: this.initialPositions };
-    }
-
-    if (
-      sizeX < this.MIN_SIZE ||
-      sizeY < this.MIN_SIZE ||
-      sizeZ < this.MIN_SIZE
-    ) {
-      console.warn(`Size is less than minimum allowed size: ${this.MIN_SIZE}`);
-      return { meshes: this.meshes, initialPositions: this.initialPositions };
-    }
-
     if (!textures || textures.length === 0) {
       console.warn('No textures provided for cube generation');
-      return { meshes: this.meshes, initialPositions: this.initialPositions };
     }
 
     this.meshes = [];
