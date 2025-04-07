@@ -35,21 +35,21 @@ const environmentMap = loadManager.loadEnvironmentMap(
 scene.scene.background = environmentMap;
 scene.scene.environment = environmentMap;
 
-ui.setGenerateCallback(dimensions => {
+ui.setGenerateCallback(sizes => {
   ui.updateUIState({ isAnimating: true });
 
   scene.clearMeshes();
 
   const meshes = cubeGenerator.generateCubeMeshes(
-    dimensions.x,
-    dimensions.y,
-    dimensions.z,
+    sizes.x,
+    sizes.y,
+    sizes.z,
     textures
   );
 
   meshes.forEach(mesh => scene.addMesh(mesh));
 
-  scene.camera.position.set(dimensions.x, dimensions.y, dimensions.z);
+  scene.camera.position.set(sizes.x, sizes.y, sizes.z);
   scene.controls.target.set(0, 0, 0);
 
   ui.updateUIState({

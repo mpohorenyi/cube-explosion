@@ -1,11 +1,10 @@
 import GUI, { Controller } from 'lil-gui';
 
-export interface CubeDimensions {
+export interface CubeSizes {
   x: number;
   y: number;
   z: number;
 }
-
 export interface UIState {
   cubeGenerated: boolean;
   isExploded: boolean;
@@ -16,14 +15,17 @@ export class UI {
   private readonly MAX_SIZE = 10;
 
   private gui: GUI;
-  private dimensionsFolder: GUI;
 
-  private uiParams: {
-    sizeX: number;
-    sizeY: number;
-    sizeZ: number;
+  private cubeFolder!: {
+    sizes: CubeSizes;
     generate: () => void;
+  };
+
+  private explodeAnimationFolder!: {
     explode: () => void;
+  };
+
+  private collectAnimationFolder!: {
     collect: () => void;
   };
 
@@ -33,66 +35,78 @@ export class UI {
     isAnimating: false,
   };
 
-  private generateCallback: ((dimensions: CubeDimensions) => void) | null =
-    null;
+  private generateCallback: ((sizes: CubeSizes) => void) | null = null;
   private explodeCallback: (() => void) | null = null;
   private collectCallback: (() => void) | null = null;
 
-  private generateController: Controller;
-  private explodeController: Controller;
-  private collectController: Controller;
+  private generateController!: Controller;
+  private explodeController!: Controller;
+  private collectController!: Controller;
 
   constructor() {
     this.gui = new GUI({ title: 'Cube Generator', width: 300 });
-    this.dimensionsFolder = this.gui.addFolder('Cube Dimensions');
 
-    this.uiParams = {
-      sizeX: 3,
-      sizeY: 3,
-      sizeZ: 3,
-      generate: () => this.onGenerate(),
-      explode: () => this.onExplode(),
-      collect: () => this.onCollect(),
-    };
-
-    this.dimensionsFolder
-      .add(this.uiParams, 'sizeX')
-      .min(1)
-      .max(10)
-      .step(1)
-      .name('Width (X)');
-    this.dimensionsFolder
-      .add(this.uiParams, 'sizeY')
-      .min(1)
-      .max(10)
-      .step(1)
-      .name('Height (Y)');
-    this.dimensionsFolder
-      .add(this.uiParams, 'sizeZ')
-      .min(1)
-      .max(10)
-      .step(1)
-      .name('Depth (Z)');
-
-    this.generateController = this.dimensionsFolder
-      .add(this.uiParams, 'generate')
-      .name('Generate Cube');
-    this.explodeController = this.gui
-      .add(this.uiParams, 'explode')
-      .name('Explode Cube');
-    this.collectController = this.gui
-      .add(this.uiParams, 'collect')
-      .name('Collect Cube');
+    this.setupCubeFolder();
+    this.setupExplodeAnimationFolder();
+    this.setupCollectAnimationFolder();
 
     this.updateButtonsState();
   }
 
-  public getCubeDimensions(): { x: number; y: number; z: number } {
-    return {
-      x: this.uiParams.sizeX,
-      y: this.uiParams.sizeY,
-      z: this.uiParams.sizeZ,
+  private setupCubeFolder(): void {
+    const cubeFolder = this.gui.addFolder('Cube Settings');
+
+    this.cubeFolder = {
+      sizes: { x: 5, y: 5, z: 5 },
+      generate: () => this.onGenerate(),
     };
+
+    const controlsConfig = [
+      { key: 'x', name: 'Width (X)', min: 1, max: this.MAX_SIZE, step: 1 },
+      { key: 'y', name: 'Height (Y)', min: 1, max: this.MAX_SIZE, step: 1 },
+      { key: 'z', name: 'Depth (Z)', min: 1, max: this.MAX_SIZE, step: 1 },
+    ];
+
+    controlsConfig.forEach(control => {
+      cubeFolder
+        .add(this.cubeFolder.sizes, control.key as keyof CubeSizes)
+        .min(control.min)
+        .max(control.max)
+        .step(control.step)
+        .name(control.name);
+    });
+
+    this.generateController = cubeFolder
+      .add(this.cubeFolder, 'generate')
+      .name('Generate Cube');
+  }
+
+  private setupExplodeAnimationFolder(): void {
+    const explodeAnimationFolder = this.gui.addFolder('Explode Animation');
+
+    this.explodeAnimationFolder = {
+      explode: () => this.onExplode(),
+    };
+
+    this.explodeController = explodeAnimationFolder
+      .add(this.explodeAnimationFolder, 'explode')
+      .name('Explode Cube');
+  }
+
+  private setupCollectAnimationFolder(): void {
+    const collectAnimationFolder = this.gui.addFolder('Collect Animation');
+
+    this.collectAnimationFolder = {
+      collect: () => this.onCollect(),
+    };
+
+    this.collectController = collectAnimationFolder
+      .add(this.collectAnimationFolder, 'collect')
+      .name('Collect Cube');
+  }
+
+  public getCubeSizes(): CubeSizes {
+    return { ...this.cubeFolder.sizes };
   }
 
   public updateUIState(options: Partial<UIState>): void {
@@ -101,9 +115,7 @@ export class UI {
     this.updateButtonsState();
   }
 
-  public setGenerateCallback(
-    callback: (dimensions: CubeDimensions) => void
-  ): void {
+  public setGenerateCallback(callback: (sizes: CubeSizes) => void): void {
     this.generateCallback = callback;
   }
 
@@ -113,40 +125,6 @@ export class UI {
 
   public setCollectCallback(callback: () => void): void {
     this.collectCallback = callback;
-  }
-
-  private validateInputs(): boolean {
-    const { sizeX, sizeY, sizeZ } = this.uiParams;
-
-    if (sizeX <= 0 || sizeY <= 0 || sizeZ <= 0) {
-      console.error('All dimensions must be positive numbers');
-      return false;
-    }
-
-    if (
-      sizeX > this.MAX_SIZE ||
-      sizeY > this.MAX_SIZE ||
-      sizeZ > this.MAX_SIZE
-    ) {
-      console.warn(`Dimensions limited to max size: ${this.MAX_SIZE}`);
-
-      this.uiParams.sizeX = Math.min(sizeX, this.MAX_SIZE);
-      this.uiParams.sizeY = Math.min(sizeY, this.MAX_SIZE);
-      this.uiParams.sizeZ = Math.min(sizeZ, this.MAX_SIZE);
-
-      this.dimensionsFolder.controllers.forEach(controller => {
-        controller.updateDisplay();
-      });
-    }
-
-    const totalElements = sizeX * sizeY * sizeZ;
-    if (totalElements > 1000) {
-      console.warn(
-        `Large cube size (${totalElements} elements). Performance might be affected.`
-      );
-    }
-
-    return true;
   }
 
   private updateButtonsState(): void {
@@ -166,14 +144,12 @@ export class UI {
   }
 
   private onGenerate(): void {
-    if (!this.validateInputs()) return;
-
     console.log(
-      `Generating cube with dimensions: ${this.uiParams.sizeX}x${this.uiParams.sizeY}x${this.uiParams.sizeZ}`
+      `Generating cube with dimensions: ${this.cubeFolder.sizes.x}x${this.cubeFolder.sizes.y}x${this.cubeFolder.sizes.z}`
     );
 
     if (this.generateCallback) {
-      this.generateCallback(this.getCubeDimensions());
+      this.generateCallback(this.getCubeSizes());
     }
   }
 
