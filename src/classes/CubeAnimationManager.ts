@@ -1,24 +1,23 @@
 import { Easing, Group, Tween } from '@tweenjs/tween.js';
 import * as THREE from 'three';
 
-interface ExplodeAnimationOptions {
+import { CollectAnimationSettings, ExplodeAnimationSettings } from './types';
+
+interface BaseAnimationOptions {
   meshes: THREE.Mesh[];
   onComplete?: () => void;
 }
 
-interface CollectAnimationOptions extends ExplodeAnimationOptions {
+interface ExplodeAnimationOptions extends BaseAnimationOptions {
+  animationSettings: ExplodeAnimationSettings;
+}
+
+interface CollectAnimationOptions extends BaseAnimationOptions {
   initialPositions: THREE.Vector3[];
+  animationSettings: CollectAnimationSettings;
 }
 
 export class CubeAnimationManager {
-  private readonly EXPLOSION_FORCE_MULTIPLIER = 3.5;
-  private readonly EXPLOSION_OFFSET_MULTIPLIER = 0.7;
-  private readonly BASE_ROTATION_SPEED = 1;
-  private readonly ANIMATION_DURATION = 1500;
-  private readonly DELAY_PER_DISTANCE = 10;
-  private readonly RANDOM_FACTOR_MULTIPLIER = 0.2;
-  private readonly CENTER_ANIMATION = new THREE.Vector3(0, 0, 0);
-
   private sceneAnimationGroup: Group;
 
   private completedAnimations = 0;
@@ -27,7 +26,7 @@ export class CubeAnimationManager {
     this.sceneAnimationGroup = animationGroup;
   }
 
-  public explodeAnimation({ meshes, onComplete }: ExplodeAnimationOptions) {
+  public explodeAnimation({ meshes, animationSettings, onComplete }: ExplodeAnimationOptions) {
     this.completedAnimations = 0;
 
     meshes.forEach(mesh => {
@@ -35,15 +34,15 @@ export class CubeAnimationManager {
         position: targetPosition,
         rotation: targetRotation,
         delay: explodeDelay,
-      } = this.calculateExplosionAnimation(mesh);
+      } = this.calculateExplosionAnimation(mesh, animationSettings);
 
       const explode = new Tween(mesh.position, this.sceneAnimationGroup)
-        .to(targetPosition, this.ANIMATION_DURATION)
+        .to(targetPosition, animationSettings.animationDuration)
         .delay(explodeDelay)
         .easing(Easing.Quintic.Out)
         .onStart(() => {
           new Tween(mesh.rotation, this.sceneAnimationGroup)
-            .to(targetRotation, this.ANIMATION_DURATION)
+            .to(targetRotation, animationSettings.animationDuration)
             .easing(Easing.Quintic.Out)
             .start();
         })
@@ -61,17 +60,18 @@ export class CubeAnimationManager {
   public collectAnimation({
     meshes,
     initialPositions,
+    animationSettings,
     onComplete,
   }: CollectAnimationOptions) {
     this.completedAnimations = 0;
 
     meshes.forEach((mesh, index) => {
       const collect = new Tween(mesh.position, this.sceneAnimationGroup)
-        .to(initialPositions[index], this.ANIMATION_DURATION)
+        .to(initialPositions[index], animationSettings.animationDuration)
         .easing(Easing.Quintic.In)
         .onStart(() => {
           new Tween(mesh.rotation, this.sceneAnimationGroup)
-            .to(new THREE.Vector3(0, 0, 0), this.ANIMATION_DURATION)
+            .to(new THREE.Vector3(0, 0, 0), animationSettings.animationDuration)
             .easing(Easing.Quintic.In)
             .start();
         })
@@ -86,23 +86,37 @@ export class CubeAnimationManager {
     });
   }
 
-  private calculateExplosionAnimation(mesh: THREE.Mesh): {
+  private calculateExplosionAnimation(
+    mesh: THREE.Mesh,
+    animationSettings: ExplodeAnimationSettings
+  ): {
     position: THREE.Vector3;
     rotation: THREE.Vector3;
     delay: number;
   } {
+    const {
+      explosionCenter,
+      explosionForceMultiplier,
+      explosionOffsetMultiplier,
+      baseRotationSpeed,
+      delayPerDistance,
+      randomFactorMultiplier,
+    } = animationSettings;
+
     const initialPosition = mesh.position.clone();
 
+    const centerVector = new THREE.Vector3(explosionCenter.x, explosionCenter.y, explosionCenter.z);
+
     // Calculate the direction vector from the center to the mesh
-    const direction = initialPosition.sub(this.CENTER_ANIMATION);
+    const direction = initialPosition.sub(centerVector);
     const baseDistance = direction.length() ? direction.length() : 1;
     direction.normalize();
 
     // Add a random offset to the direction
     const randomOffset = new THREE.Vector3(
-      (Math.random() * 2 - 1) * this.EXPLOSION_OFFSET_MULTIPLIER,
-      (Math.random() * 2 - 1) * this.EXPLOSION_OFFSET_MULTIPLIER,
-      (Math.random() * 2 - 1) * this.EXPLOSION_OFFSET_MULTIPLIER
+      (Math.random() * 2 - 1) * explosionOffsetMultiplier,
+      (Math.random() * 2 - 1) * explosionOffsetMultiplier,
+      (Math.random() * 2 - 1) * explosionOffsetMultiplier
     );
 
     // Combine normalized direction and random offset
@@ -110,33 +124,25 @@ export class CubeAnimationManager {
 
     // Calculate the explosion distance with random variation
     const randomDistanceFactor =
-      Math.random() * (this.RANDOM_FACTOR_MULTIPLIER * 2) -
-      this.RANDOM_FACTOR_MULTIPLIER;
-    const explosionDistance =
-      baseDistance *
-      this.EXPLOSION_FORCE_MULTIPLIER *
-      (1 + randomDistanceFactor);
+      Math.random() * (randomFactorMultiplier * 2) - randomFactorMultiplier;
+    const explosionDistance = baseDistance * explosionForceMultiplier * (1 + randomDistanceFactor);
 
     // Calculate the final position
-    const targetPosition = this.CENTER_ANIMATION.clone().add(
-      finalDirection.multiplyScalar(explosionDistance)
-    );
+    const targetPosition = centerVector
+      .clone()
+      .add(finalDirection.multiplyScalar(explosionDistance));
 
     // Calculate the rotation speed
-    const randomRotationFactor =
-      this.RANDOM_FACTOR_MULTIPLIER +
-      Math.random() * this.RANDOM_FACTOR_MULTIPLIER;
+    const randomRotationFactor = randomFactorMultiplier + Math.random() * randomFactorMultiplier;
     const rotationSpeed =
-      this.BASE_ROTATION_SPEED *
-      Math.pow(explosionDistance / baseDistance, 2) *
-      randomRotationFactor;
+      baseRotationSpeed * Math.pow(explosionDistance / baseDistance, 2) * randomRotationFactor;
     const targetRotation = new THREE.Vector3(
       Math.random() * Math.PI * rotationSpeed,
       Math.random() * Math.PI * rotationSpeed,
       Math.random() * Math.PI * rotationSpeed
     );
 
-    const explosionDelay = baseDistance * this.DELAY_PER_DISTANCE;
+    const explosionDelay = baseDistance * delayPerDistance;
 
     return {
       position: targetPosition,

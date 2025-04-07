@@ -1,10 +1,4 @@
-import {
-  CubeAnimationManager,
-  CubeGenerator,
-  LoadManager,
-  Scene,
-  UI,
-} from './classes';
+import { CubeAnimationManager, CubeGenerator, LoadManager, Scene, UI } from './classes';
 
 const scene = new Scene('.webgl');
 
@@ -29,9 +23,7 @@ const textures = loadManager.loadTextures([
   '/textures/ores/redstone_ore.png',
 ]);
 
-const environmentMap = loadManager.loadEnvironmentMap(
-  '/environment/cave-min.jpg'
-);
+const environmentMap = loadManager.loadEnvironmentMap('/environment/cave-min.jpg');
 scene.scene.background = environmentMap;
 scene.scene.environment = environmentMap;
 
@@ -40,12 +32,7 @@ ui.setGenerateCallback(sizes => {
 
   scene.clearMeshes();
 
-  const meshes = cubeGenerator.generateCubeMeshes(
-    sizes.x,
-    sizes.y,
-    sizes.z,
-    textures
-  );
+  const meshes = cubeGenerator.generateCubeMeshes(sizes.x, sizes.y, sizes.z, textures);
 
   meshes.forEach(mesh => scene.addMesh(mesh));
 
@@ -59,18 +46,19 @@ ui.setGenerateCallback(sizes => {
   });
 });
 
-ui.setExplodeCallback(() => {
+ui.setExplodeCallback(animationSettings => {
   ui.updateUIState({ isAnimating: true });
 
   cubeAnimationManager.explodeAnimation({
     meshes: cubeGenerator.getMeshes(),
+    animationSettings,
     onComplete: () => {
       ui.updateUIState({ isAnimating: false, isExploded: true });
     },
   });
 });
 
-ui.setCollectCallback(() => {
+ui.setCollectCallback(animationSettings => {
   ui.updateUIState({ isAnimating: true });
 
   const initialPositions = cubeGenerator.getInitialPositions();
@@ -78,6 +66,7 @@ ui.setCollectCallback(() => {
   cubeAnimationManager.collectAnimation({
     meshes: cubeGenerator.getMeshes(),
     initialPositions,
+    animationSettings,
     onComplete: () => {
       ui.updateUIState({ isAnimating: false, isExploded: false });
     },
