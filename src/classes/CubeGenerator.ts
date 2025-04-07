@@ -32,12 +32,14 @@ export class CubeGenerator {
     const offsetZ = (sizeZ - 1) / 2;
     const tempPosition = new THREE.Vector3();
 
+    const materials = this.createMaterials(textures);
+
     for (let x = 0; x < sizeX; x++) {
       for (let y = 0; y < sizeY; y++) {
         for (let z = 0; z < sizeZ; z++) {
           tempPosition.set(x - offsetX, y - offsetY, z - offsetZ);
 
-          const mesh = this.createRandomMesh(tempPosition, textures);
+          const mesh = this.createRandomMesh(tempPosition, materials);
 
           this.meshes.push(mesh);
           this.initialPositions.push(tempPosition.clone());
@@ -48,27 +50,33 @@ export class CubeGenerator {
     return [...this.meshes];
   }
 
-  private geometryCreators = [
-    () => new THREE.BoxGeometry(1, 1, 1),
-    () => new THREE.SphereGeometry(0.5, 16, 16),
-    () => new THREE.CylinderGeometry(0.5, 0.5, 1, 16),
+  private geometries: THREE.BufferGeometry[] = [
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.SphereGeometry(0.5, 16, 16),
+    new THREE.CylinderGeometry(0.5, 0.5, 1, 16),
   ];
+
+  private createMaterials(textures: THREE.Texture[]): THREE.Material[] {
+    return Array.from({ length: textures.length }, (_, index) => {
+      return new THREE.MeshBasicMaterial({
+        map: textures[index],
+      });
+    });
+  }
 
   private createRandomMesh(
     position: THREE.Vector3,
-    textures: THREE.Texture[]
+    materials: THREE.Material[]
   ): THREE.Mesh {
     const randomGeometryIndex = Math.floor(
-      Math.random() * this.geometryCreators.length
+      Math.random() * this.geometries.length
     );
-    const geometry = this.geometryCreators[randomGeometryIndex]();
+    const randomMaterialIndex = Math.floor(Math.random() * materials.length);
 
-    const randomTextureIndex = Math.floor(Math.random() * textures.length);
-    const material = new THREE.MeshBasicMaterial({
-      map: textures[randomTextureIndex],
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(
+      this.geometries[randomGeometryIndex],
+      materials[randomMaterialIndex]
+    );
 
     mesh.position.copy(position);
 
