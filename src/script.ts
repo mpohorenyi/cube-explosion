@@ -34,7 +34,7 @@ ui.setGenerateCallback(sizes => {
 
   const meshes = cubeGenerator.generateCubeMeshes(sizes.x, sizes.y, sizes.z, textures);
 
-  meshes.forEach(mesh => scene.addMesh(mesh));
+  scene.scene.add(...meshes)
 
   scene.camera.position.set(sizes.x, sizes.y, sizes.z);
   scene.controls.target.set(0, 0, 0);

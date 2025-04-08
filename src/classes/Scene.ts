@@ -55,10 +55,6 @@ export class Scene {
     this.tick();
   }
 
-  public addMesh(mesh: THREE.Mesh) {
-    this.scene.add(mesh);
-  }
-
   public clearMeshes() {
     const meshesToRemove: THREE.Mesh[] = [];
 
