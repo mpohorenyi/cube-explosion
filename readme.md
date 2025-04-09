@@ -25,7 +25,7 @@ An interactive 3D cube explosion animation created with Three.js, Tween.js and T
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/cube-explosion.git
+git clone https://github.com/mpohorenyi/cube-explosion.git
 cd cube-explosion
 ```
 
